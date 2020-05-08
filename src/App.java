@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.Scanner;
 
 public class App {
-    public SpotifyApi spotifyApi;
+    private SpotifyApi spotifyApi;   //Users Spotify Account
     private final Device device;    //Will Hold Raspberry Pi Name
 
     public App(SpotifyApi spotifyApi, String device_name){
@@ -36,6 +36,8 @@ public class App {
         return null;
     }
 
+    /*Creates a Search Request with Song as the Input Value
+    * Then Adds the First Track To the End of the Users Playback Queue*/
     public int addToQueue(String song){
         //Creates SearchRequest
         SearchTracksRequest str = spotifyApi.searchTracks(song)
@@ -43,7 +45,7 @@ public class App {
                 .build();
 
         if(device != null){
-            //Add track
+            //Adds First Track
             Track track;
             try {
                 track = str.execute().getItems()[0];
@@ -56,13 +58,13 @@ public class App {
             assert track != null;
             String uri = track.getUri();
             try {
-                spotifyApi.addItemToUsersPlaybackQueue(uri).device_id(device.getId()).build().execute();
+                spotifyApi.addItemToUsersPlaybackQueue(uri).device_id(device.getId()).build().execute(); //adds to queue
             } catch (IOException | SpotifyWebApiException | ParseException e) {
                 e.printStackTrace();
                 System.err.println("FAILED TO ADD \""+song+"\": STATUS -2");
                 return -2;
             }
-        }else{
+        }else{//Device is null
             System.err.println("DEVICE NOT AVAILABLE: STATUS -3");
             return -3;
         }
@@ -78,6 +80,7 @@ public class App {
         }
     }
 
+    /*Prompts User For Selector Value*/
     private int getTool() {
         Scanner tool = new Scanner(System.in);
         System.out.print("Enter Selector Value: ");
@@ -88,6 +91,7 @@ public class App {
         return 0;
     }
 
+    /*TODO: MAKE ME A CLASS*/
     private void queueTool() {
         int cont = 0;
         while(cont >=0){
@@ -96,6 +100,7 @@ public class App {
         }
     }
 
+    /*Prompts User for Selector Value*/
     private int getQueueOp() {
         int cont = 0;
         Scanner queue = new Scanner(System.in);
@@ -111,6 +116,7 @@ public class App {
         return cont;
     }
 
+    /*Prompts User for Search String and Returns it*/
     private String getSearchValue() {
         Scanner search = new Scanner(System.in);
 
@@ -121,7 +127,7 @@ public class App {
         }
         return value;
     }
-
+    /*Queue Menu Display*/
     private void showQueueMenu(){
         System.out.println("" +
                 "Selection Value     Operation Description\n"+
@@ -129,6 +135,7 @@ public class App {
         );
     }
 
+    /*Main Menu Display*/
     private void showMenu() {
         System.out.println("" +
                 "Selection Value     Tool Description\n"+
