@@ -5,7 +5,6 @@ import com.wrapper.spotify.requests.authorization.authorization_code.Authorizati
 import org.apache.hc.core5.http.ParseException;
 
 import java.io.IOException;
-import java.util.Scanner;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -60,11 +59,8 @@ public class AuthorizationRefresh{
     public static void main(String[] args) throws ParseException, SpotifyWebApiException, IOException {
         authorizationCodeRefresh_Sync();
         authorizationCodeRefresh_Async();
-        App app = new App(spotifyApi);
-        Scanner scan = new Scanner(System.in);
-        while(true){
-            System.out.print("Please Enter A song to add: ");
-            app.addToQueue(scan.nextLine());
-        }
+
+        App app = new App(spotifyApi,"LAPTOP-42MARVS2");
+        app.launch();
     }
 }

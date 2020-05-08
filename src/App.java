@@ -6,35 +6,133 @@ import com.wrapper.spotify.requests.data.search.simplified.SearchTracksRequest;
 import org.apache.hc.core5.http.ParseException;
 
 import java.io.IOException;
+import java.util.Scanner;
 
 public class App {
     public SpotifyApi spotifyApi;
-    private final String device_name = "LAPTOP-42MARVS2";
-    public App(SpotifyApi spotifyApi){
+    private final Device device;    //Will Hold Raspberry Pi Name
+
+    public App(SpotifyApi spotifyApi, String device_name){
         this.spotifyApi = spotifyApi;
+        this.device = findDevice(device_name);
     }
 
-    public void addToQueue(String song) throws ParseException, SpotifyWebApiException, IOException {
+    /*SEARCHES USERS ACCOUNT FOR AVAILABLE DEVICES AND RETURNS THE TARGET DEVICE*/
+    private Device findDevice(String device_name) {
+        Device[] deviceList =  null;
+        try {
+            deviceList = spotifyApi.getUsersAvailableDevices().build().execute();
+        } catch (IOException | SpotifyWebApiException | ParseException e) {
+            e.printStackTrace();
+            System.err.println("DEVICE SEARCH ERROR: EXIT -20");
+            System.exit(-20);
+        }
+
+        for(Device d: deviceList){
+            if(d.getName().equals(device_name))
+                return d;
+        }
+        System.err.println("DEVICE NOT FOUND");
+        return null;
+    }
+
+    public int addToQueue(String song){
         //Creates SearchRequest
         SearchTracksRequest str = spotifyApi.searchTracks(song)
                 .limit(1)
                 .build();
 
-        Device[] devices = spotifyApi.getUsersAvailableDevices().build().execute();
-
-        String device_id = null;
-        for(Device d: devices){
-            if(device_name.equals(d.getName()))
-                device_id = d.getId();
-        }
-        if(device_id != null){
+        if(device != null){
             //Add track
-            Track track = str.execute().getItems()[0];
+            Track track;
+            try {
+                track = str.execute().getItems()[0];
+            } catch (IOException | SpotifyWebApiException | ParseException e) {
+                e.printStackTrace();
+                System.err.println("TRACK NOT FOUND: STATUS -1");
+                return -1;
+            }
+
             assert track != null;
             String uri = track.getUri();
-            spotifyApi.addItemToUsersPlaybackQueue(uri).device_id(device_id).build().execute();
+            try {
+                spotifyApi.addItemToUsersPlaybackQueue(uri).device_id(device.getId()).build().execute();
+            } catch (IOException | SpotifyWebApiException | ParseException e) {
+                e.printStackTrace();
+                System.err.println("FAILED TO ADD \""+song+"\": STATUS -2");
+                return -2;
+            }
         }else{
-            System.err.println("Decice not avalible");
+            System.err.println("DEVICE NOT AVAILABLE: STATUS -3");
+            return -3;
         }
+        System.out.println("\""+song+"\" WAS ADDED SUCCESSFULLY");
+        return 0;
+    }
+
+    public void launch() {
+        int cont = 0;
+        while(cont >=0){
+            showMenu();
+            cont = getTool();
+        }
+    }
+
+    private int getTool() {
+        Scanner tool = new Scanner(System.in);
+        System.out.print("Enter Selector Value: ");
+        switch(tool.nextInt()){
+            case 1: queueTool(); break;
+            case -1: return -1;
+        }
+        return 0;
+    }
+
+    private void queueTool() {
+        int cont = 0;
+        while(cont >=0){
+            showQueueMenu();
+            cont = getQueueOp();
+        }
+    }
+
+    private int getQueueOp() {
+        int cont = 0;
+        Scanner queue = new Scanner(System.in);
+        System.out.print("Enter Selector Value (-1 to Return to Previous Menu): ");
+        switch(queue.nextInt()){
+            case 1:
+                while(cont >= 0){
+                    cont = addToQueue(getSearchValue());
+                }
+                break;
+            case -1: cont = -1; break;
+        }
+        return cont;
+    }
+
+    private String getSearchValue() {
+        Scanner search = new Scanner(System.in);
+
+        String value = null;
+        while(value==null || value.equals("")){
+            System.out.print("Enter Search Value (-1 to Return to Previous Menu): ");
+            value = search.nextLine();
+        }
+        return value;
+    }
+
+    private void showQueueMenu(){
+        System.out.println("" +
+                "Selection Value     Operation Description\n"+
+                "01:                 Add Song to End of Queue\n"
+        );
+    }
+
+    private void showMenu() {
+        System.out.println("" +
+                "Selection Value     Tool Description\n"+
+                "01:                 Queue\n"
+        );
     }
 }
