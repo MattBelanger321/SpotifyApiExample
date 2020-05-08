@@ -49,10 +49,13 @@ public class App {
             Track track;
             try {
                 track = str.execute().getItems()[0];
-            } catch (IOException | SpotifyWebApiException | ParseException e) {
+            } catch (IOException | SpotifyWebApiException | ParseException  e) {
                 e.printStackTrace();
-                System.err.println("TRACK NOT FOUND: STATUS -1");
+                System.err.println("SEARCH DISRUPTED: STATUS -1");
                 return -1;
+            }catch(ArrayIndexOutOfBoundsException e){
+                System.err.println("TRACK NOT FOUND: STATUS 1");
+                return 1;
             }
 
             assert track != null;
