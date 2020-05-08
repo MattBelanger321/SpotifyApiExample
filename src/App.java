@@ -39,22 +39,24 @@ public class App {
     /*Creates a Search Request with Song as the Input Value
     * Then Adds the First Track To the End of the Users Playback Queue*/
     public int addToQueue(String song){
+        if(song.equals("-1")||song.equals("")){
+            return -1;
+        }
         //Creates SearchRequest
         SearchTracksRequest str = spotifyApi.searchTracks(song)
                 .limit(1)
                 .build();
-
+        Track track;
         if(device != null){
             //Adds First Track
-            Track track;
             try {
                 track = str.execute().getItems()[0];
             } catch (IOException | SpotifyWebApiException | ParseException  e) {
                 e.printStackTrace();
-                System.err.println("SEARCH DISRUPTED: STATUS -1");
+                System.err.println("SEARCH DISRUPTED: STATUS -1\nRETURNING TO: MAIN MENU");
                 return -1;
             }catch(ArrayIndexOutOfBoundsException e){
-                System.err.println("TRACK NOT FOUND: STATUS 1");
+                System.err.println("TRACK NOT FOUND: STATUS 1\nRETURNING TO: ADD TO QUEUE");
                 return 1;
             }
 
@@ -64,14 +66,14 @@ public class App {
                 spotifyApi.addItemToUsersPlaybackQueue(uri).device_id(device.getId()).build().execute(); //adds to queue
             } catch (IOException | SpotifyWebApiException | ParseException e) {
                 e.printStackTrace();
-                System.err.println("FAILED TO ADD \""+song+"\": STATUS -2");
+                System.err.println("FAILED TO ADD \""+song+"\": STATUS -2\n RETURNING TO: MAIN MENU");
                 return -2;
             }
         }else{//Device is null
-            System.err.println("DEVICE NOT AVAILABLE: STATUS -3");
+            System.err.println("DEVICE NOT AVAILABLE: STATUS -3\n RETURNING TO: MAIN MENU");
             return -3;
         }
-        System.out.println("\""+song+"\" WAS ADDED SUCCESSFULLY");
+        System.out.println("\""+track.getName()+"\" by: \""+track.getArtists()[0].getName()+"\" WAS ADDED SUCCESSFULLY");
         return 0;
     }
 
@@ -83,15 +85,31 @@ public class App {
         }
     }
 
-    /*Prompts User For Selector Value*/
+    /*PReturns Users Menu Selection*/
     private int getTool() {
-        Scanner tool = new Scanner(System.in);
-        System.out.print("Enter Selector Value: ");
-        switch(tool.nextInt()){
+        switch(getInt()){
             case 1: queueTool(); break;
             case -1: return -1;
+            default: System.err.println("INVALID INPUT: STATUS -100"); return -100;
         }
         return 0;
+    }
+    /*Prompts User for Selector Value*/
+    private int getInt() {
+        Scanner getter = new Scanner(System.in);
+        String value;
+        int parsedValue;
+        while(true){
+            System.out.print("\nEnter Selector Value: ");
+            value = getter.nextLine();
+            try{
+                parsedValue = Integer.parseInt(value);
+                break;
+            }catch(NumberFormatException e){
+                System.err.println("INVALID INPUT: STATUS -1");
+            }
+        }
+        return parsedValue;
     }
 
     /*TODO: MAKE ME A CLASS*/
@@ -103,29 +121,28 @@ public class App {
         }
     }
 
-    /*Prompts User for Selector Value*/
+    //*Returns Users Queue Menu Selection*/
     private int getQueueOp() {
         int cont = 0;
-        Scanner queue = new Scanner(System.in);
-        System.out.print("Enter Selector Value (-1 to Return to Previous Menu): ");
-        switch(queue.nextInt()){
+        switch(getInt()){
             case 1:
                 while(cont >= 0){
-                    cont = addToQueue(getSearchValue());
+                    cont = addToQueue(getString());
                 }
                 break;
             case -1: cont = -1; break;
+            default: System.err.println("INVALID INPUT: STATUS -100"); return -100;
         }
         return cont;
     }
 
     /*Prompts User for Search String and Returns it*/
-    private String getSearchValue() {
+    private String getString() {
         Scanner search = new Scanner(System.in);
 
         String value = null;
         while(value==null || value.equals("")){
-            System.out.print("Enter Search Value (-1 to Return to Previous Menu): ");
+            System.out.print("\nEnter Search Value (-1 to Return to Previous Menu): ");
             value = search.nextLine();
         }
         return value;
