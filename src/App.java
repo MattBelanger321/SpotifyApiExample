@@ -1,8 +1,6 @@
 import com.wrapper.spotify.SpotifyApi;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
 import com.wrapper.spotify.model_objects.miscellaneous.Device;
-import com.wrapper.spotify.model_objects.specification.Track;
-import com.wrapper.spotify.requests.data.search.simplified.SearchTracksRequest;
 import org.apache.hc.core5.http.ParseException;
 
 import java.io.IOException;
@@ -10,11 +8,11 @@ import java.util.Scanner;
 
 public class App {
     private SpotifyApi spotifyApi;   //Users Spotify Account
-    private final Device device;    //Will Hold Raspberry Pi Name
+    public static Device device;    //Will Hold Raspberry Pi Name
 
     public App(SpotifyApi spotifyApi, String device_name){
         this.spotifyApi = spotifyApi;
-        this.device = findDevice(device_name);
+        device = findDevice(device_name);
     }
 
     /*SEARCHES USERS ACCOUNT FOR AVAILABLE DEVICES AND RETURNS THE TARGET DEVICE*/
@@ -36,46 +34,6 @@ public class App {
         return null;
     }
 
-    /*Creates a Search Request with Song as the Input Value
-    * Then Adds the First Track To the End of the Users Playback Queue*/
-    public int addToQueue(String song){
-        if(song.equals("-1")||song.equals("")){
-            return -1;
-        }
-        //Creates SearchRequest
-        SearchTracksRequest str = spotifyApi.searchTracks(song)
-                .limit(1)
-                .build();
-        Track track;
-        if(device != null){
-            //Adds First Track
-            try {
-                track = str.execute().getItems()[0];
-            } catch (IOException | SpotifyWebApiException | ParseException  e) {
-                e.printStackTrace();
-                System.err.println("SEARCH DISRUPTED: STATUS -1\nRETURNING TO: MAIN MENU");
-                return -1;
-            }catch(ArrayIndexOutOfBoundsException e){
-                System.err.println("TRACK NOT FOUND: STATUS 1\nRETURNING TO: ADD TO QUEUE");
-                return 1;
-            }
-
-            assert track != null;
-            String uri = track.getUri();
-            try {
-                spotifyApi.addItemToUsersPlaybackQueue(uri).device_id(device.getId()).build().execute(); //adds to queue
-            } catch (IOException | SpotifyWebApiException | ParseException e) {
-                e.printStackTrace();
-                System.err.println("FAILED TO ADD \""+song+"\": STATUS -2\n RETURNING TO: MAIN MENU");
-                return -2;
-            }
-        }else{//Device is null
-            System.err.println("DEVICE NOT AVAILABLE: STATUS -3\n RETURNING TO: MAIN MENU");
-            return -3;
-        }
-        System.out.println("\""+track.getName()+"\" by: \""+track.getArtists()[0].getName()+"\" WAS ADDED SUCCESSFULLY");
-        return 0;
-    }
 
     public void launch() {
         int cont = 0;
@@ -88,14 +46,16 @@ public class App {
     /*PReturns Users Menu Selection*/
     private int getTool() {
         switch(getInt()){
-            case 1: queueTool(); break;
+            case 1: QueueTool.tool(spotifyApi,device); break;
+            case 2: PlaybackTool.tool(spotifyApi,device);
             case -1: return -1;
             default: System.err.println("INVALID INPUT: STATUS -100"); return -100;
         }
         return 0;
     }
+
     /*Prompts User for Selector Value*/
-    private int getInt() {
+    public static int getInt() {
         Scanner getter = new Scanner(System.in);
         String value;
         int parsedValue;
@@ -112,32 +72,8 @@ public class App {
         return parsedValue;
     }
 
-    /*TODO: MAKE ME A CLASS*/
-    private void queueTool() {
-        int cont = 0;
-        while(cont >=0){
-            showQueueMenu();
-            cont = getQueueOp();
-        }
-    }
-
-    //*Returns Users Queue Menu Selection*/
-    private int getQueueOp() {
-        int cont = 0;
-        switch(getInt()){
-            case 1:
-                while(cont >= 0){
-                    cont = addToQueue(getString());
-                }
-                break;
-            case -1: cont = -1; break;
-            default: System.err.println("INVALID INPUT: STATUS -100"); return -100;
-        }
-        return cont;
-    }
-
     /*Prompts User for Search String and Returns it*/
-    private String getString() {
+    public static String getString() {
         Scanner search = new Scanner(System.in);
 
         String value = null;
@@ -147,19 +83,13 @@ public class App {
         }
         return value;
     }
-    /*Queue Menu Display*/
-    private void showQueueMenu(){
-        System.out.println("" +
-                "Selection Value     Operation Description\n"+
-                "01:                 Add Song to End of Queue\n"
-        );
-    }
 
     /*Main Menu Display*/
-    private void showMenu() {
+    public static void showMenu() {
         System.out.println("" +
                 "Selection Value     Tool Description\n"+
-                "01:                 Queue\n"
+                "01:                 Queue\n" +
+                "02:                 Playback Control"
         );
     }
 }
