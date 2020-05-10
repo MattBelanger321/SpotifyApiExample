@@ -7,7 +7,7 @@ import org.apache.hc.core5.http.ParseException;
 
 import java.io.IOException;
 
-class QueueTool extends Tool{
+class QueueTool{
     private static SpotifyApi spotifyApi;
     private static Device device;
     public static void tool(SpotifyApi spotifyApi1, Device device1) {

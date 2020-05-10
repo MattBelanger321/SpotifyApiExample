@@ -1,7 +1,7 @@
 import com.wrapper.spotify.SpotifyApi;
 import com.wrapper.spotify.model_objects.miscellaneous.Device;
 
-public class PlaybackTool extends Tool{
+public class PlaybackTool{
     private static SpotifyApi spotifyApi;
     private static Device device;
 

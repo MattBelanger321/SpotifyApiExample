@@ -12,6 +12,7 @@ public class App {
 
     public App(SpotifyApi spotifyApi, String device_name){
         this.spotifyApi = spotifyApi;
+        refreshAccess();
         device = findDevice(device_name);
     }
 
@@ -20,10 +21,19 @@ public class App {
         Device[] deviceList =  null;
         try {
             deviceList = spotifyApi.getUsersAvailableDevices().build().execute();
-        } catch (IOException | SpotifyWebApiException | ParseException e) {
+        } catch (IOException | ParseException e) {
             e.printStackTrace();
             System.err.println("DEVICE SEARCH ERROR: EXIT -20");
             System.exit(-20);
+        }catch(SpotifyWebApiException e){
+            System.err.println("AUTHORIZATION FAILED: RETRYING");
+            refreshAccess();
+            try {
+                deviceList = spotifyApi.getUsersAvailableDevices().build().execute();
+            } catch (IOException | ParseException | SpotifyWebApiException ex) {
+                System.err.println("AUTHORIZATION REVOKED: EXIT STATUS -500");
+                System.exit(-500);
+            }
         }
 
         for(Device d: deviceList){
@@ -32,6 +42,14 @@ public class App {
         }
         System.err.println("DEVICE NOT FOUND");
         return null;
+    }
+
+    private void refreshAccess() {
+        try {
+            spotifyApi.setAccessToken(spotifyApi.authorizationCodeRefresh().build().execute().getAccessToken());
+        } catch (IOException | SpotifyWebApiException | ParseException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -77,8 +95,8 @@ public class App {
         Scanner search = new Scanner(System.in);
 
         String value = null;
+        System.out.print("\nEnter Search Value (-1 to Return to Previous Menu): ");
         while(value==null || value.equals("")){
-            System.out.print("\nEnter Search Value (-1 to Return to Previous Menu): ");
             value = search.nextLine();
         }
         return value;

@@ -10,19 +10,29 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
 public class AuthorizationRefresh{
-    private static final String clientId = "11681662b6c94af2a77730826269f808";
-    private static final String clientSecret = "b7192adc21374e389437cc8954b4298e";
-    private static final String refreshToken = "AQBZXOdnSloS0uGZOqT_nf6P3os1uvRc7Zw3JLTKb2R8ZPJuzhGvgZoDj4KE1_ndIBrWuCdDljC1hE8Y068vsWEixaEESk1t2Noi7D0INLbBozlmIINGTec56ArMcRF6Uss";
+    private String clientId;
+    private String clientSecret;
+    private String refreshToken;
+    private SpotifyApi spotifyApi;
+    private AuthorizationCodeRefreshRequest authorizationCodeRefreshRequest;
 
-    private static final SpotifyApi spotifyApi = new SpotifyApi.Builder()
-            .setClientId(clientId)
-            .setClientSecret(clientSecret)
-            .setRefreshToken(refreshToken)
-            .build();
-    private static final AuthorizationCodeRefreshRequest authorizationCodeRefreshRequest = spotifyApi.authorizationCodeRefresh()
-            .build();
+    public AuthorizationRefresh(String clientId, String clientSecret, String refreshToken) {
+        this.clientId = clientId;
+        this.clientSecret = clientSecret;
+        this.refreshToken = refreshToken;
 
-    public static void authorizationCodeRefresh_Sync() {
+        spotifyApi = new SpotifyApi.Builder()
+                .setClientId(clientId)
+                .setClientSecret(clientSecret)
+                .setRefreshToken(refreshToken)
+                .build();
+        authorizationCodeRefreshRequest = spotifyApi.authorizationCodeRefresh()
+                .build();
+        authorizationCodeRefresh_Sync();
+        authorizationCodeRefresh_Async();
+    }
+
+    public void authorizationCodeRefresh_Sync() {
         try {
             final AuthorizationCodeCredentials authorizationCodeCredentials = authorizationCodeRefreshRequest.execute();
 
@@ -30,13 +40,12 @@ public class AuthorizationRefresh{
             spotifyApi.setAccessToken(authorizationCodeCredentials.getAccessToken());
             spotifyApi.setRefreshToken(authorizationCodeCredentials.getRefreshToken());
 
-            System.out.println("Expires in: " + authorizationCodeCredentials.getExpiresIn());
         } catch (IOException | SpotifyWebApiException | ParseException e) {
             System.out.println("Error: " + e.getMessage());
         }
     }
 
-    public static void authorizationCodeRefresh_Async() {
+    public void authorizationCodeRefresh_Async() {
         try {
             final CompletableFuture<AuthorizationCodeCredentials> authorizationCodeCredentialsFuture = authorizationCodeRefreshRequest.executeAsync();
 
@@ -48,7 +57,6 @@ public class AuthorizationRefresh{
             // Set access token for further "spotifyApi" object usage
             spotifyApi.setAccessToken(authorizationCodeCredentials.getAccessToken());
 
-            System.out.println("Expires in: " + authorizationCodeCredentials.getExpiresIn());
         } catch (CompletionException e) {
             System.out.println("Error: " + e.getCause().getMessage());
         } catch (CancellationException e) {
@@ -56,6 +64,10 @@ public class AuthorizationRefresh{
         }
     }
 
+    public SpotifyApi getSpotifyApi() {
+        return spotifyApi;
+    }
+/*
     public static void main(String[] args) throws ParseException, SpotifyWebApiException, IOException {
         authorizationCodeRefresh_Sync();
         authorizationCodeRefresh_Async();
@@ -63,4 +75,5 @@ public class AuthorizationRefresh{
         App app = new App(spotifyApi,"LAPTOP-42MARVS2");
         app.launch();
     }
+*/
 }
