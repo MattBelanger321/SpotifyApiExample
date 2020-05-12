@@ -82,7 +82,7 @@ public class AuthorizationCode{
             spotifyApi.setRefreshToken(authorizationCodeCredentials.getRefreshToken());
 
         } catch (CompletionException e) {
-            System.out.println("Error: " + e.getCause().getMessage());
+            //System.out.println("Error: " + e.getCause().getMessage());
         } catch (CancellationException e) {
             System.out.println("Async operation cancelled.");
         }

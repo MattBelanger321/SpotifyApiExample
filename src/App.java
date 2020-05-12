@@ -10,9 +10,14 @@ public class App {
     private static SpotifyApi spotifyApi;   //Users Spotify Account
     public static Device device;    //Will Hold Raspberry Pi Name
 
-    public App(SpotifyApi spotifyApi, String device_name){
+    public App(SpotifyApi spotifyApi, String device_name,boolean init){
         this.spotifyApi = spotifyApi;
-        refreshAccess();
+        if(init){
+            System.out.println("SIGN IN SUCCESSFUL");
+            refreshAccess();
+        }else{
+            System.out.println("WELCOME BACK!");
+        }
         device = findDevice(device_name);
     }
 
@@ -26,7 +31,7 @@ public class App {
             System.err.println("DEVICE SEARCH ERROR: EXIT -20");
             System.exit(-20);
         }catch(SpotifyWebApiException e){
-            System.err.println("AUTHORIZATION FAILED: RETRYING");
+            System.err.println("AUTHORIZATION FAILED: RETRYING...");
             refreshAccess();
             try {
                 deviceList = spotifyApi.getUsersAvailableDevices().build().execute();

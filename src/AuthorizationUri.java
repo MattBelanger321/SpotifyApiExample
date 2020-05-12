@@ -70,7 +70,7 @@ public class AuthorizationUri {
 
     public static void main(String[] args) {
         System.out.println("Welcome to the Spotify Terminal App for Windows");
-        System.out.println("Enter '1' for Initial Setup\nEnter Anything Else to Get Going!");
+        System.out.println("Enter '1' for Initial Setup\nEnter Anything Else to Get Going!\n");
         if(new Scanner(System.in).nextLine().equals("1")){
             new AuthorizationUri().login();
         }else{
@@ -83,13 +83,9 @@ public class AuthorizationUri {
                 System.exit(-7);
             }
             spotifyApi.setRefreshToken(refreshToken);
-            App app = new App(spotifyApi,"LAPTOP-42MARVS2");
+            App app = new App(spotifyApi,"LAPTOP-42MARVS2",false);
             app.launch();
         }
-    }
-
-    private static void login(String refreshToken) {
-
     }
 
     public static String decodeToken() throws FileNotFoundException {
@@ -110,15 +106,9 @@ public class AuthorizationUri {
     private void login() {
         Scanner scan = new Scanner(System.in);
 
-        System.out.print(""+
-                "LOGIN INSTRUCTIONS:\n" +
-                "1: Look at the Site URL of the blank Redirect Page in your Address Bar\n" +
-                "2: Find \"callback?code=--CODE HERE--\" in the Address bar\n"+
-                "3: Copy the code and Paste it on the Next Line\n"
-        );
         authorizationCodeUri_Sync();
         authorizationCodeUri_Async();
-        System.out.print("Right Click the Text-Marker to Paste)> ");
+        System.out.print("Paste code (Right Click to print in CMD)> ");
         String code = scan.nextLine();
 
         AuthorizationCode ac = new AuthorizationCode(clientId,clientSecret,redirectUri,code);
@@ -127,7 +117,7 @@ public class AuthorizationUri {
         AuthorizationRefresh ar = new AuthorizationRefresh(clientId,clientSecret,ac.getRefreshToken());
         spotifyApi = ar.getSpotifyApi();
 
-        App app = new App(spotifyApi,"LAPTOP-42MARVS2");
+        App app = new App(spotifyApi,"LAPTOP-42MARVS2",true);
         app.launch();
     }
 }
