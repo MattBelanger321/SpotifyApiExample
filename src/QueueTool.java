@@ -54,18 +54,28 @@ class QueueTool{
         SearchTracksRequest str = spotifyApi.searchTracks(song)
                 .limit(1)
                 .build();
-        Track track;
+        Track track = null;
         if(device != null){
             //Adds First Track
             try {
                 track = str.execute().getItems()[0];
-            } catch (IOException | SpotifyWebApiException | ParseException e) {
+            } catch (IOException | ParseException e) {
                 e.printStackTrace();
                 System.err.println("SEARCH DISRUPTED: STATUS -1\nRETURNING TO: MAIN MENU");
                 return -1;
             }catch(ArrayIndexOutOfBoundsException e){
                 System.err.println("TRACK NOT FOUND: STATUS 1\nRETURNING TO: ADD TO QUEUE");
                 return 1;
+            } catch (SpotifyWebApiException e) {
+                System.err.println("AUTHORIZATION FAILED: RETRYING");
+                App.refreshAccess();
+                try {
+                    track = str.execute().getItems()[0];
+                } catch (IOException | SpotifyWebApiException | ParseException ex) {
+                    System.out.println("Fatal Error: Relaunch and Proceed with Initial Setup");
+                    ex.printStackTrace();
+                    System.exit(-666);
+                }
             }
 
             System.out.println(getSong(track)+" Was Found! Add it To Queue? (Enter 'y' to confirm)> ");

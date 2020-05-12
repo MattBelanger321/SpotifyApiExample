@@ -1,5 +1,9 @@
 import com.wrapper.spotify.SpotifyApi;
+import com.wrapper.spotify.exceptions.SpotifyWebApiException;
 import com.wrapper.spotify.model_objects.miscellaneous.Device;
+import org.apache.hc.core5.http.ParseException;
+
+import java.io.IOException;
 
 public class PlaybackTool{
     private static SpotifyApi spotifyApi;
@@ -11,20 +15,57 @@ public class PlaybackTool{
 
         int cont = 0;
         while(cont >=0){
-            showToolMenu();
-            cont = getOp();
+            showPlaybackMenu();
+            cont = getPlaybackOp();
         }
     }
 
 
-    protected static void showToolMenu() {
+    protected static void showPlaybackMenu() {
         System.out.println("" +
-                "Selection Value     Operation Description\n"
+                "Selection Value        Operation Description\n"+
+                "1:                     Play Spotify\n" +
+                "2:                     Pause Playback\n"+
+                ""
         );
     }
 
 
-    protected static int getOp() {
+    private static int getPlaybackOp() {
+        int cont = 0; //Determines what will happen after after operation is completed
+        switch(App.getInt()){
+            case 1:
+                cont = play();
+                break;
+            case 2:
+                cont = stop();
+                break;
+            case -1: cont = -1; break;
+            default: System.err.println("INVALID INPUT: STATUS -100"); return -100;
+        }
+        return cont;
+    }
+
+    /*Pauses Current Playing Song or Does Nothing if No Music is Playing*/
+    private static int stop() {
+        try {
+            spotifyApi.pauseUsersPlayback().build().execute();
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
+        } catch (SpotifyWebApiException e) {
+            System.out.println("ERROR: MUSIC IS NOT PLAYING\nReturning to Playback Menu");
+        }
+        return 0;
+    }
+
+    private static int play() {
+        try {
+            spotifyApi.startResumeUsersPlayback().build().execute();
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
+        } catch (SpotifyWebApiException e) {
+            System.out.println("ERROR: MUSIC IS ALREADY PLAYING\nReturning to Playback Menu");
+        }
         return 0;
     }
 }

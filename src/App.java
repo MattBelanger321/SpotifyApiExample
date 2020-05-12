@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.Scanner;
 
 public class App {
-    private SpotifyApi spotifyApi;   //Users Spotify Account
+    private static SpotifyApi spotifyApi;   //Users Spotify Account
     public static Device device;    //Will Hold Raspberry Pi Name
 
     public App(SpotifyApi spotifyApi, String device_name){
@@ -35,16 +35,41 @@ public class App {
                 System.exit(-500);
             }
         }
-
         for(Device d: deviceList){
             if(d.getName().equals(device_name))
                 return d;
         }
-        System.err.println("DEVICE NOT FOUND");
+
+        System.err.println("DEVICE SEARCH ERROR: Retrying...\nLAUNCHING SPOTIFY FOR WINDOWS");
+        try {
+            openSpotify();
+            deviceList = spotifyApi.getUsersAvailableDevices().build().execute();
+        } catch (IOException ex) {
+            System.err.println("UNABLE TO OPEN SPOTIFY: EXIT STATUS: -20");
+            System.exit(-20);
+        } catch (ParseException | SpotifyWebApiException ex) {
+            System.err.println("UNABVLE TO FIND DEVICE: EXIT STATUS -21");
+            System.exit(-21);
+        }
+        for(Device d: deviceList){
+            if(d.getName().equals(device_name))
+                return d;
+        }
+        System.exit(-20);
         return null;
     }
 
-    private void refreshAccess() {
+    private void openSpotify() throws IOException {
+        Runtime.getRuntime().exec("\"C:\\Users\\mattm\\AppData\\Local\\Microsoft\\WindowsApps\\spotify.exe\"");
+        try {
+            System.out.println("WAITING FOR SPOTIFY TO OPEN...");
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    static void refreshAccess() {
         try {
             spotifyApi.setAccessToken(spotifyApi.authorizationCodeRefresh().build().execute().getAccessToken());
         } catch (IOException | SpotifyWebApiException | ParseException e) {
@@ -52,7 +77,7 @@ public class App {
         }
     }
 
-
+    /* Main Program starts here*/
     public void launch() {
         int cont = 0;
         while(cont >=0){
@@ -61,11 +86,11 @@ public class App {
         }
     }
 
-    /*PReturns Users Menu Selection*/
+    /*The selected tool is started*/
     private int getTool() {
         switch(getInt()){
             case 1: QueueTool.tool(spotifyApi,device); break;
-            case 2: PlaybackTool.tool(spotifyApi,device);
+            case 2: PlaybackTool.tool(spotifyApi,device); break;
             case -1: return -1;
             default: System.err.println("INVALID INPUT: STATUS -100"); return -100;
         }
