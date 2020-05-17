@@ -32,7 +32,7 @@ public class PlaybackTool{
 
 
     private static int getPlaybackOp() {
-        int cont = 0; //Determines what will happen after after operation is completed
+        int cont; //Determines what will happen after after operation is completed
         switch(App.getInt()){
             case 1:
                 cont = play();
@@ -53,7 +53,8 @@ public class PlaybackTool{
         } catch (IOException | ParseException e) {
             e.printStackTrace();
         } catch (SpotifyWebApiException e) {
-            System.out.println("ERROR: MUSIC IS NOT PLAYING\nReturning to Playback Menu");
+            /*TODO DIFERENTIATE*/
+            System.err.println("MAKE SURE "+device.getName() + "is your active device\nOr no music is playing");
         }
         return 0;
     }
@@ -64,7 +65,8 @@ public class PlaybackTool{
         } catch (IOException | ParseException e) {
             e.printStackTrace();
         } catch (SpotifyWebApiException e) {
-            System.out.println("ERROR: MUSIC IS ALREADY PLAYING\nReturning to Playback Menu");
+            /*TODO DIFERENTIATE*/
+            System.err.println("MAKE SURE "+device.getName() + "is your active device\nOr music is already playing");
         }
         return 0;
     }

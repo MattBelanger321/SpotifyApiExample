@@ -11,7 +11,7 @@ public class App {
     public static Device device;    //Will Hold Raspberry Pi Name
 
     public App(SpotifyApi spotifyApi, String device_name,boolean init){
-        this.spotifyApi = spotifyApi;
+        App.spotifyApi = spotifyApi;
         if(init){
             System.out.println("SIGN IN SUCCESSFUL");
             refreshAccess();
@@ -65,7 +65,7 @@ public class App {
     }
 
     private void openSpotify() throws IOException {
-        Runtime.getRuntime().exec("\"C:\\Users\\mattm\\AppData\\Local\\Microsoft\\WindowsApps\\spotify.exe\"");
+        Runtime.getRuntime().exec("Spotify.exe");
         try {
             System.out.println("WAITING FOR SPOTIFY TO OPEN...");
             Thread.sleep(10000);
