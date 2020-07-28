@@ -1,6 +1,0 @@
-Manifest-Version: 1.0
-Created-By: 10.0.2 (Oracle Corporation)
-Name: lib
-Sealed: true
-Main-Class: AuthorizationUri
-Class-Path: lib\commons-codec-1.13.jar lib\gson-2.8.6.jar lib\httpclient5-5.0.jar lib\httpclient5-cache-5.0.jar lib\httpcore5-5.0.jar lib\httpcore5-h2-5.0.jar lib\jackson-annotations-2.10.2.jar lib\jackson-core-2.10.2.jar lib\jackson-databind-2.10.2.jar lib\nv-i18n-1.27.jar lib\slf4j-api-1.7.25.jar lib\slf4j-simple-1.7.30.jar lib\spotify-web-api-java-6.0.0-RC1.jar
